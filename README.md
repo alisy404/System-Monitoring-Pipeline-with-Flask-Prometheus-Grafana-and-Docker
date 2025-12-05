@@ -1,0 +1,2 @@
+# System-Monitoring-Pipeline-with-Flask-Prometheus-Grafana-and-Docker
+A lightweight end-to-end monitoring system built with Flask, Prometheus, Grafana, and Docker. The project demonstrates how to build a custom metrics pipeline from scratch — collecting system metrics (CPU, RAM, Disk, Network), exposing them via a Flask API, converting them into Prometheus format through an exporter and visualizing them with Grafana.
