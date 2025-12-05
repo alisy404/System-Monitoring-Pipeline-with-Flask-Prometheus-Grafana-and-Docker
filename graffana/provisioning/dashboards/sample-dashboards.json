@@ -1,0 +1,37 @@
+{
+  "id": null,
+  "title": "Device Monitoring Dashboard",
+  "schemaVersion": 16,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "CPU Usage",
+      "targets": [
+        { "expr": "device_cpu_percent" }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Memory Usage (%)",
+      "targets": [
+        { "expr": "device_memory_percent" }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Disk Usage (%)",
+      "targets": [
+        { "expr": "device_disk_percent" }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Network Upload / Download",
+      "targets": [
+        { "expr": "device_network_upload_bytes_per_second" },
+        { "expr": "device_network_download_bytes_per_second" }
+      ]
+    }
+  ]
+}

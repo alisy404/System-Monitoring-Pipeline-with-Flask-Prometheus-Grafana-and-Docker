@@ -1,0 +1,57 @@
+services:
+  flask-app:
+    build: ./app
+    container_name: flask-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - monitor-net
+
+  exporter:
+    build: ./exporter
+    container_name: json-to-prom-exporter
+    restart: unless-stopped
+    environment:
+      TARGET: "http://flask-app:5000/metrics"
+      SCRAPE_INTERVAL: "5"
+    ports:
+      - "9110:9110"
+    depends_on:
+      - flask-app
+    networks:
+      - monitor-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3010:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitor-net
+
+networks:
+  monitor-net:
+    driver: bridge

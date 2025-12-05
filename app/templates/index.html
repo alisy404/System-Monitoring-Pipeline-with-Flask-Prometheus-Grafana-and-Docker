@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Device Monitor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#3b82f6;
+      --glass: rgba(255,255,255,0.04);
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius:14px;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,#071025 0%, #071830 100%);
+      color:#e6eef8;
+      min-height:100vh;
+      padding:24px;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+    header h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:0.2px;
+    }
+    header p{ color:var(--muted); margin:0; font-size:13px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:16px;
+    }
+    @media (max-width:900px){ .grid{ grid-template-columns: repeat(2,1fr); } }
+    @media (max-width:600px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+      min-height:120px;
+    }
+    .card h3{ margin:0 0 8px 0; font-size:14px; color:#dff1ff; }
+    .big{
+      font-size:28px;
+      font-weight:700;
+      margin:0 0 10px 0;
+    }
+    .muted{ color:var(--muted); font-size:13px; }
+
+    .progress{
+      height:12px;
+      background:var(--glass);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+    .progress > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),#60a5fa);
+      border-radius:999px;
+      transition: width 0.6s ease;
+    }
+
+    .small-row{ display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    .label{ font-size:13px; color:var(--muted); }
+
+    .network-sizes{ display:flex; gap:12px; margin-top:8px; align-items:center; }
+    .pill{
+      background: rgba(255,255,255,0.03);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    footer{
+      margin-top:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* status dot */
+    .dot{
+      width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle;
+    }
+    .dot.green{ background:var(--success) }
+    .dot.red{ background:var(--danger) }
+
+    /* nice table for details */
+    .details{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .detail-row{ display:flex; justify-content:space-between; font-size:13px; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Device Monitor</h1>
+        <p>Live system metrics — updated every second.</p>
+      </div>
+      <div id="time" class="muted">--:--:--</div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>CPU</h3>
+        <div class="big" id="cpu">--%</div>
+        <div class="muted">Usage</div>
+        <div class="progress" aria-hidden><i id="cpu-bar"></i></div>
+        <div class="details">
+          <div class="detail-row"><span class="label">Cores</span><span id="cpu-cores" class="muted">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Memory</h3>
+        <div class="big" id="mem">--</div>
+        <div class="muted" id="mem-percent">--%</div>
+        <div class="progress"><i id="mem-bar"></i></div>
+        <div class="details">
+          <div class="detail-row"><span class="label">Used / Total</span><span id="mem-used" class="muted">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Storage</h3>
+        <div class="big" id="disk">--</div>
+        <div class="muted" id="disk-percent">--%</div>
+        <div class="progress"><i id="disk-bar"></i></div>
+        <div class="details">
+          <div class="detail-row"><span class="label">Used / Total</span><span id="disk-used" class="muted">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Battery</h3>
+        <div class="big" id="battery">--</div>
+        <div class="muted" id="battery-status">--</div>
+        <div class="progress"><i id="battery-bar"></i></div>
+        <div class="details">
+          <div class="detail-row"><span class="label">Power plugged</span><span id="battery-plugged" class="muted">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Network</h3>
+        <div class="big" id="net-down">--</div>
+        <div class="muted">Download / Upload</div>
+        <div class="network-sizes">
+          <div class="pill" id="down-pill">--/s</div>
+          <div class="pill" id="up-pill">--/s</div>
+        </div>
+        <div class="details" style="margin-top:12px;">
+          <div class="detail-row"><span class="label">Last updated</span><span id="net-time" class="muted">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>About</h3>
+        <div class="muted" style="margin-bottom:8px;">Small local monitor built with <strong>Flask</strong> + <strong>psutil</strong>.</div>
+        <div class="small-row">
+          <div><span id="os-info" class="muted">OS</span></div>
+          <div><span id="uptime" class="muted">Uptime</span></div>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:13px;">
+          Tip: open this on the same machine you want to monitor.
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span class="muted">Refresh rate: 1s • The battery may show "N/A" on desktops or systems without a battery.</span>
+    </footer>
+  </div>
+
+<script>
+const cpuBar = document.getElementById('cpu-bar');
+const memBar = document.getElementById('mem-bar');
+const diskBar = document.getElementById('disk-bar');
+const batteryBar = document.getElementById('battery-bar');
+
+function setBar(el, percent){
+  el.style.width = Math.max(0, Math.min(100, percent)) + '%';
+}
+
+function human(bytes){
+  if (bytes === null || bytes === undefined) return "--";
+  const units = ['B','KB','MB','GB','TB'];
+  let i = 0;
+  let n = bytes;
+  while (n >= 1024 && i < units.length-1){
+    n /= 1024; i++;
+  }
+  return n.toFixed(1) + ' ' + units[i];
+}
+
+async function fetchMetrics(){
+  try{
+    const res = await fetch('/metrics');
+    if (!res.ok) throw new Error('Bad response');
+    const j = await res.json();
+
+    const now = new Date();
+    document.getElementById('time').textContent = now.toLocaleTimeString();
+
+    // CPU
+    document.getElementById('cpu').textContent = j.cpu_percent + '%';
+    setBar(cpuBar, j.cpu_percent);
+    document.getElementById('cpu-cores').textContent = navigator.hardwareConcurrency || '—';
+
+    // Memory
+    document.getElementById('mem').textContent = j.memory.percent + '%';
+    setBar(memBar, j.memory.percent);
+    document.getElementById('mem-percent').textContent = j.memory.percent + '%';
+    document.getElementById('mem-used').textContent = j.memory.human_used + ' / ' + j.memory.human_total;
+
+    // Disk
+    document.getElementById('disk').textContent = j.disk.percent + '%';
+    setBar(diskBar, j.disk.percent);
+    document.getElementById('disk-percent').textContent = j.disk.percent + '%';
+    document.getElementById('disk-used').textContent = j.disk.human_used + ' / ' + j.disk.human_total;
+
+    // Battery
+    if (j.battery){
+      document.getElementById('battery').textContent = j.battery.percent + '%';
+      setBar(batteryBar, j.battery.percent);
+      document.getElementById('battery-status').textContent = (j.battery.secsleft === -2 ? 'Unknown time left' : (j.battery.secsleft === -1 ? 'Charging/Unlimited' : 'Time left: ' + Math.floor(j.battery.secsleft/60)+'m'));
+      document.getElementById('battery-plugged').textContent = j.battery.power_plugged ? 'Yes' : 'No';
+    } else {
+      document.getElementById('battery').textContent = 'N/A';
+      setBar(batteryBar, 0);
+      document.getElementById('battery-status').textContent = 'No battery detected';
+      document.getElementById('battery-plugged').textContent = '—';
+    }
+
+    // Network
+    document.getElementById('down-pill').textContent = j.network.download_human_s;
+    document.getElementById('up-pill').textContent = j.network.upload_human_s;
+    document.getElementById('net-down').textContent = j.network.download_human_s + ' ↓';
+    document.getElementById('net-time').textContent = new Date(j.timestamp*1000).toLocaleTimeString();
+
+    // About
+    document.getElementById('os-info').textContent = navigator.platform || 'Platform';
+    // simple uptime estimate based on performance.timing isn't reliable; leave as dash
+    document.getElementById('uptime').textContent = '—';
+
+  }catch(e){
+    console.error('fetch error', e);
+  }
+}
+
+// initial call
+fetchMetrics();
+// poll every 1s
+setInterval(fetchMetrics, 1000);
+</script>
+</body>
+</html>
