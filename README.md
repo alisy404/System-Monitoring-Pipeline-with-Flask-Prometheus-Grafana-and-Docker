@@ -1,139 +1,116 @@
-### 📊 System Monitoring Pipeline  
-### Flask • Prometheus • Grafana • Docker • Custom Exporter
+# 📊 Production-Style Monitoring Stack
+### Flask • Prometheus • Grafana • Alertmanager • Node Exporter • Docker
 
-This project implements a complete, lightweight monitoring and observability pipeline using Flask, Prometheus, Grafana, and Docker Compose. It collects host system metrics using Python (`psutil`), exposes them via a Flask API, converts them into Prometheus-formatted metrics through a custom exporter, stores them in Prometheus, and visualizes them with Grafana dashboards.
+This project implements a real-world monitoring and alerting system using Prometheus and Grafana.  
+A Flask application exposes **application-level metrics**, while system-level metrics are collected using **Node Exporter**. Prometheus scrapes all metrics, Alertmanager handles alerting, and Grafana provides dashboards for visualization.
 
-The goal of this project is to demonstrate real-world monitoring concepts: metric collection, exporters, Prometheus scraping, dashboarding, and containerized observability workflows.
+The architecture and practices used in this project closely follow industry-standard DevOps and SRE monitoring patterns.
 
------------------------------------------------------------------------------------
+---
 
-## 🚀 Features
-- **System Metrics Collection:** CPU, Memory, Disk, and Network usage gathered via `psutil` and exposed as JSON at `/metrics`.
-- **Custom Prometheus Exporter:** Fetches JSON metrics from Flask and converts them into Prometheus metrics exposed on `9110/metrics`.
-- **Prometheus Integration:** Scrapes exporter metrics and stores them in a time-series database.
-- **Grafana Dashboards:** Preconfigured Prometheus datasource and visual dashboards for CPU, memory, disk, and network trends.
-- **Dockerized Environment:** All components containerized and orchestrated using Docker Compose.
+## 🎯 Project Objectives
+- Implement application-level monitoring using Prometheus instrumentation
+- Collect host-level system metrics using Node Exporter
+- Centralize metric storage and querying with Prometheus
+- Enable alerting using Alertmanager
+- Visualize metrics using Grafana dashboards
+- Run the entire stack using Docker Compose
 
------------------------------------------------------------------------------------
+---
 
-## 🧱 Architecture
+## 🧱 Architecture Overview
 
-Flask (psutil metrics)
-↓ JSON /metrics
-Custom Exporter
-↓ Prometheus metrics
-Prometheus (scrapes & stores)
-↓ API
-Grafana (visual dashboards)
+Flask Application
+└── /metrics (Prometheus format)
+↓
+Prometheus
+├── Scrapes Flask metrics
+├── Scrapes Node Exporter metrics
+└── Evaluates alert rules
+↓
+Alertmanager ──▶ Notifications (Webhook / Slack-ready)
+↓
+Grafana ──▶ Dashboards & Visualization
 
------------------------------------------------------------------------------------
 
-## 🔄 Workflow
-1. Flask collects system metrics using `psutil` and exposes them via `/metrics`.
-2. The custom exporter pulls this JSON and translates it to Prometheus format.
-3. Prometheus scrapes the exporter periodically and stores the metrics.
-4. Grafana connects to Prometheus and visualizes the data on dashboards.
 
------------------------------------------------------------------------------------
+---
+
+## 🔄 Monitoring Flow
+1. Flask exposes application metrics (`/metrics`) using `prometheus_client`
+2. Node Exporter exposes host system metrics (`/metrics`)
+3. Prometheus scrapes both targets periodically
+4. Alert rules are evaluated inside Prometheus
+5. Alerts are routed via Alertmanager
+6. Grafana queries Prometheus to visualize metrics
+
+---
 
 ## 🛠 Tech Stack
-- Python • Flask • psutil  
-- Prometheus  
-- Grafana  
-- Docker & Docker Compose  
-- Custom Exporter Pattern
+- **Python / Flask**
+- **Prometheus**
+- **Grafana**
+- **Alertmanager**
+- **Node Exporter**
+- **Docker & Docker Compose**
 
------------------------------------------------------------------------------------
+---
 
-## 📁 Folder Structure
-project/
-├── app
-│   ├── app.py
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── templates
-│       └── index.html
+## 📁 Project Structure
+prom-app/
+├── app/ # Flask application
+├── prometheus/ # Prometheus config & alert rules
+├── alertmanager/ # Alertmanager config & templates
+├── grafana/ # Grafana provisioning
+├── docs/ # Operational documentation
 ├── docker-compose.yaml
-├── exporter
-│   ├── app.py
-│   ├── Dockerfile
-│   └── requirements.txt
-├── grafana  [error opening dir]
-├── graffana
-│   └── provisioning
-│       ├── dashboards
-│       │   └── sample-dashboards.json
-│       └── datasources
-│           └── datasource.yaml
-├── prometheus
-│   └── prometheus.yaml
 └── README.md
 
------------------------------------------------------------------------------------
 
-## ⚙️ Setup Instructions
+---
 
-### 1️⃣ Clone the repository
-git clone <your-repo-url>
-cd <project-folder>
+## ⚙️ How to Run
 
-### 2️⃣ Start the monitoring stack
+```bash
 docker compose up --build -d
 
-### 3️⃣ Access the services
 
-| Service | URL |
-|---------|-----|
-| Flask App | http://localhost:5000 |
-| Flask JSON Metrics | http://localhost:5000/metrics |
-| Exporter Metrics | http://localhost:9110/metrics |
-| Prometheus UI | http://localhost:9090 |
-| Grafana UI | http://localhost:3010 (admin/admin) |
-
------------------------------------------------------------------------------------
-
-## 📊 Prometheus Metrics Provided
-These metrics become available for querying and dashboards:
-
-device_cpu_percent
-device_memory_percent
-device_disk_percent
-device_network_upload_bytes_per_second
-device_network_download_bytes_per_second
-
------------------------------------------------------------------------------------
-
-## 📈 Grafana Dashboard
-The dashboard includes:
-- CPU usage trend  
-- Memory usage trend  
-- Disk space trend  
-- Network throughput over time  
-
-Dashboard files located under:
-grafana/provisioning/dashboards/
-
------------------------------------------------------------------------------------
-
-## 🔮 Future Enhancements
-- Add Alertmanager for Slack/email alerting  
-- Integrate Node Exporter for deeper host monitoring  
-- Add cAdvisor for container-level metrics  
-- Add Loki + Promtail for log collection  
-- Deploy stack to Kubernetes with Helm charts  
-
------------------------------------------------------------------------------------
-
-## 🎯 Resume Highlights
-This project demonstrates:
-- Strong understanding of observability & monitoring pipelines  
-- Custom metrics exporter development  
-- Prometheus scraping model & TSDB concepts  
-- Grafana dashboard provisioning  
-- Docker-based DevOps engineering  
-- System metrics collection & visualization  
+🌐 Service Access
+Service	URL
+Flask App	    http://localhost:5000
+Flask Metrics	http://localhost:5000/metrics
+Node Exporter	http://localhost:9100
+Prometheus	    http://localhost:9090
+Grafana	        http://localhost:3010
+Alertmanager	http://localhost:9093
 
 
-______________________________________________________________________________________
+Grafana Login:
+    admin / admin
 
-THANK YOU!!
+
+📊 Example Metrics
+
+http_requests_total
+http_request_duration_seconds
+node_cpu_seconds_total
+node_memory_MemAvailable_bytes
+
+🚨 Alerting
+
+Alert rules detect:
+Application downtime
+High request latency
+
+Alertmanager is configured with a webhook receiver and can be extended to Slack, Email, or PagerDuty.
+
+
+📈 Dashboards
+
+Grafana dashboards visualize:
+    HTTP request rate & latency
+    CPU & memory usage
+    Host-level metrics
+
+
+----------------THANK YOU-----------------------

@@ -1,0 +1,4 @@
+{{ define "alert.message" }}
+[{{ .Status | toUpper }}] {{ .CommonAnnotations.summary }}
+{{ .CommonAnnotations.description }}
+{{ end }}

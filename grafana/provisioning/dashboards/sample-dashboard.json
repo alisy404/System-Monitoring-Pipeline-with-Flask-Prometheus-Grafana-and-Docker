@@ -1,0 +1,17 @@
+{
+  "title": "Flask Application Metrics",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests",
+      "targets": [{ "expr": "http_requests_total" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Latency (95p)",
+      "targets": [{
+        "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+      }]
+    }
+  ]
+}
